@@ -1,13 +1,30 @@
 
 
 % Ejercicio 1
-matriz(F, C, M) :- completar("Ejercicio 1").
+fila(CantElems, Fila) :- length(Fila, CantElems).
+
+%matriz(F, C, M) :- length(M, F), maplist(fila(C), M).
+
+matriz(0, C, []).
+matriz(F, C, [X|M]) :- F1 is F-1, length(M, F1), length(X, C), matriz(F1, C, M).
 
 % Ejercicio 2
-replicar(X, N, L) :- completar("Ejercicio 2").
+%replicar(+Elem, +N, -Lista)
+replicar(_, 0, []).
+replicar(X, N, [X|L]) :- N1 is N-1, length(L, N1), replicar(X, N1, L).
+
+%replicar(X, 0, []).
+%replicar(X, N, [X|L]) :- N1 is N-1, length(L, N), replicar(X, N1, L).
 
 % Ejercicio 3
-transponer(_, _) :- completar("Ejercicio 3").
+%transponer(+M, -MT)
+transponer(M, MT) :- transponerAux(M, MT, 0).
+
+transponerAux([X|M], [], C) :- length(X, C).
+transponerAux(M, [Z|MT], C) :- C1 is C+1, penesito(M, Z, C), transponerAux(M, MT, C1).
+
+penesito([], [], _).
+penesito([X|M], [Y|Z], P) :- nth0(P,X,Y), penesito(M,Z,P).
 
 % Predicado dado armarNono/3
 armarNono(RF, RC, nono(M, RS)) :-
