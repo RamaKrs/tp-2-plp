@@ -1,30 +1,20 @@
 
 
 % Ejercicio 1
-fila(CantElems, Fila) :- length(Fila, CantElems).
-
-%matriz(F, C, M) :- length(M, F), maplist(fila(C), M).
-
-matriz(0, C, []).
-matriz(F, C, [X|M]) :- F1 is F-1, length(M, F1), length(X, C), matriz(F1, C, M).
-
+matriz(F, C, M) :- length(M,F),maplist(longitud(C),M).
+longitud(C,X):- length(X,C).
 % Ejercicio 2
-%replicar(+Elem, +N, -Lista)
-replicar(_, 0, []).
-replicar(X, N, [X|L]) :- N1 is N-1, length(L, N1), replicar(X, N1, L).
-
-%replicar(X, 0, []).
-%replicar(X, N, [X|L]) :- N1 is N-1, length(L, N), replicar(X, N1, L).
+replicar(_,0, []).
+replicar(X, N, [X|T]):- N>0,J is N-1,replicar(X,J,T).
 
 % Ejercicio 3
-%transponer(+M, -MT)
 transponer(M, MT) :- transponerAux(M, MT, 0).
 
-transponerAux([X|M], [], C) :- length(X, C).
-transponerAux(M, [Z|MT], C) :- C1 is C+1, penesito(M, Z, C), transponerAux(M, MT, C1).
+transponerAux([X|_], [], C) :- length(X, C).
+transponerAux(M, [Z|MT], C) :- C1 is C+1, unificar(M, Z, C), transponerAux(M, MT, C1).
 
-penesito([], [], _).
-penesito([X|M], [Y|Z], P) :- nth0(P,X,Y), penesito(M,Z,P).
+unificar([], [], _).
+unificar([X|M], [Y|Z], P) :- nth0(P,X,Y), unificar(M,Z,P).
 
 % Predicado dado armarNono/3
 armarNono(RF, RC, nono(M, RS)) :-
@@ -40,14 +30,23 @@ zipR([], [], []).
 zipR([R|RT], [L|LT], [r(R,L)|T]) :- zipR(RT, LT, T).
 
 % Ejercicio 4
-pintadasValidas(_) :- completar("Ejercicio 4").
+pintadasValidas(r(R,L)) :-length(R,CR), sum_list(R,SN),length(L,Longitud),generarblancos(CR,Longitud,SN,B),
+    						mergear(R,B,L).
+mergear([],[],[]).
+mergear([],[B],L):-replicar(o,B,L).
+mergear([N|NS],[B|BS],L):-replicar(o,B,LB),replicar(x,N,LN),append(LB,LN,L0),mergear(NS,BS,L1),append(L0,L1,L).
+
+generarblancos(CR,L,SN,RB):-S is L-SN,C is CR+1,C<3,length(RB,C),maplist(between(0,S),RB) ,sum_list(RB,S).
+generarblancos(CR,L,SN,RB):-S is L-SN,C is CR+1,C>=3,length(RB,C),maplist(between(0,S),RB) ,sum_list(RB,S),K is CR-1,
+    						forall((nth0(I,RB,Elem),between(1,K,I)),Elem>=1).
 
 % Ejercicio 5
-resolverNaive(_) :-  completar("Ejercicio 5").
+resolverNaive(nono(_,R)) :-  maplist(pintadasValidas,R).
 
 % Ejercicio 6
-pintarObligatorias(_) :- completar("Ejercicio 6").
-
+pintarObligatorias(r(R,L)) :-findall(L,pintadasValidas(r(R,L)),ResParcial), obligatoriasAux(ResParcial,L).
+obligatoriasAux([L],L).
+obligatoriasAux([X,Y|LS],Res):- maplist(combinarCelda,X,Y,Z), obligatoriasAux([Z|LS],Res).
 % Predicado dado combinarCelda/3
 combinarCelda(A, B, _) :- var(A), var(B).
 combinarCelda(A, B, _) :- nonvar(A), var(B).
@@ -56,7 +55,7 @@ combinarCelda(A, B, A) :- nonvar(A), nonvar(B), A = B.
 combinarCelda(A, B, _) :- nonvar(A), nonvar(B), A \== B.
 
 % Ejercicio 7
-deducir1Pasada(_) :- completar("Ejercicio 7").
+deducir1Pasada(nono(_,R)) :- maplist(pintarObligatorias,R).
 
 % Predicado dado
 cantidadVariablesLibres(T, N) :- term_variables(T, LV), length(LV, N).
@@ -70,18 +69,25 @@ deducirVariasPasadas(NN) :-
 	deducirVariasPasadasCont(NN, VI, VF).
 
 % Predicado dado
-deducirVariasPasadasCont(_, A, A). % Si VI = VF entonces no hubo más cambios y frenamos.
+deducirVariasPasadasCont(_, A, A). % Si VI = VF entonces no hubo mas cambios y frenamos.
 deducirVariasPasadasCont(NN, A, B) :- A =\= B, deducirVariasPasadas(NN).
 
 % Ejercicio 8
-restriccionConMenosLibres(_, _) :- completar("Ejercicio 8").
+restriccionConMenosLibres(nono(_,N), R) :- member(R,N),cantidadVariablesLibres(R,Cant),Cant>0,
+    							 		   not((member(R2,N),cantidadVariablesLibres(R2,X), X>0,Cant>X)).
+
 
 % Ejercicio 9
-resolverDeduciendo(NN) :- completar("Ejercicio 9").
+resolverDeduciendo(NN) :- deducirVariasPasadas(NN),checkearVars(NN).
+resolverDeduciendo(NN) :- deducirVariasPasadas(NN),deduccionAux(NN).
 
+
+checkearVars(nono(M,_)):-cantidadVariablesLibres(M,VI), VI=:=0.
+
+deduccionAux(NN):-restriccionConMenosLibres(NN,R),!, pintadasValidas(R),deducirVariasPasadas(NN),resolverDeduciendo(NN).
 % Ejercicio 10
-solucionUnica(NN) :- completar("Ejercicio 10").
-
+solucionUnica(NN) :- esSolucionUnica(NN),resolverDeduciendo(NN).
+esSolucionUnica(NN):-findall(NN,resolverDeduciendo(NN), C), length(C,N), N=:=1.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                              %
 %    Ejemplos de nonogramas    %
