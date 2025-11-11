@@ -1,11 +1,10 @@
-
-
 % Ejercicio 1
-matriz(F, C, M) :- length(M,F),maplist(longitud(C),M).
+matriz(F, C, M) :- length(M,F), maplist(longitud(C),M).
 longitud(C,X):- length(X,C).
+
 % Ejercicio 2
 replicar(_,0, []).
-replicar(X, N, [X|T]):- N>0,J is N-1,replicar(X,J,T).
+replicar(X, N, [X|T]):- N>0, J is N-1, replicar(X,J,T).
 
 % Ejercicio 3
 transponer(M, MT) :- transponerAux(M, MT, 0).
@@ -166,3 +165,7 @@ mostrarFila(Fila) :-
 mostrarCelda(C) :- nonvar(C), C = x, write('██').
 mostrarCelda(C) :- nonvar(C), C = o, write('░░').
 mostrarCelda(C) :- var(C), write('¿?').
+
+
+% DEFINICION DE TAM:
+tam(N, (F, C)) :- nn(N, nono(M, _)), matriz(F, C, M).
